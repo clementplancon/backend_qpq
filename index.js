@@ -19,19 +19,25 @@ app.use(cors());
 app.use(json({limit: '50mb'})); // Increase the limit to 50mb
 
 app.use((req, res, next) => {
+    console.log(`Request received: ${req.method} ${req.url}`);
     const apiKey = req.headers['x-api-key'];
     if (apiKey !== APP_API_KEY) {
+        console.log(`Invalid API key: ${apiKey}`);
         return res.status(403).json({ error: 'Forbidden' });
     }
+    console.log(`Valid API key: ${apiKey}`);
     next();
 });
 
 app.post('/api/ticket-mistral-ocr', async (req, res) => {
+    console.log('Received request on /api/ticket-mistral-ocr');
     try {
         const { base64_image } = req.body;
         if (!base64_image) {
+            console.log('Missing base64_image in request body');
             return res.status(400).json({ error: 'Scan manquant. Veuillez scanner un document avant d\'en extraire des informations.' });
         }
+        console.log('base64_image received, preparing to send to Mistral API');
 
         const mistralBody = {
             model: "mistral-small-latest",
@@ -53,9 +59,12 @@ app.post('/api/ticket-mistral-ocr', async (req, res) => {
         };
 
         const mistralResponse = await client.chat.complete(mistralBody);
+        console.log('Mistral API response received');
 
         res.json(JSON.parse(mistralResponse.choices[0].message.content));
+        console.log('Response sent to client');
     } catch (err) {
+        console.error('Error processing request:', err);
         res.status(err.response?.status || 500).json({ error: err.message, details: err.response?.data });
     }
 });
