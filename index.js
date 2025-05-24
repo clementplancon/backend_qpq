@@ -61,6 +61,11 @@ app.post('/api/ticket-mistral-ocr', async (req, res) => {
         const mistralResponse = await client.chat.complete(mistralBody);
         console.log('Mistral API response received');
 
+        var clientResult = JSON.parse(mistralResponse.choices[0].message.content);
+        if (clientResult.error === 'cannot_read') {
+            console.log('Mistral API returned cannot_read error');
+            return res.status(400).json({ error: 'Le scan est flou, illisible ou n\'a pas été identifié comme un ticket de caisse. Veuillez essayer avec un autre scan.' });
+        }
         res.json(JSON.parse(mistralResponse.choices[0].message.content));
         console.log('Response sent to client');
     } catch (err) {
