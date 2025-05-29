@@ -13,7 +13,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const APP_API_KEY = process.env.APP_API_KEY;
 const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
-const BUCKET_PATH = '/home/clevercloud/qpq_ticket_storage/'; 
+const APP_HOME = process.env.APP_HOME || '/home/clevercloud/app';
+const BUCKET_DIR = path.join(APP_HOME, '/dataset/bills');
 
 const client = new Mistral({
     apiKey: MISTRAL_API_KEY
@@ -71,23 +72,27 @@ app.post('/api/ticket-mistral-ocr', async (req, res) => {
             return res.status(400).json({ error: 'Le scan est flou, illisible ou n\'a pas été identifié comme un ticket de caisse. Veuillez essayer avec un autre scan.' });
         }
 
-            // *** SAUVEGARDE DE L'IMAGE ***
-            // Génère un nom de fichier unique
-            const filename = `${uuidv4()}_${Date.now()}.jpg`;
-            // Decode le base64 en buffer
-            const imgBuffer = Buffer.from(base64_image, 'base64');
-            // Ecrit dans le FS Bucket
-            fs.writeFile(
-                path.join(BUCKET_PATH, filename),
-                imgBuffer,
-                (err) => {
-                    if (err) {
-                        console.error('Erreur lors de la sauvegarde de l\'image dans le FS Bucket:', err);
-                    } else {
-                        console.log(`Image sauvegardée dans le FS Bucket : ${filename}`);
-                    }
+        // *** SAUVEGARDE DE L'IMAGE ***
+        if (!fs.existsSync(BUCKET_DIR)) {
+            fs.mkdirSync(BUCKET_DIR, { recursive: true });
+        }
+        
+        // Génère un nom de fichier unique
+        const filename = `${uuidv4()}_${Date.now()}.jpg`;
+        // Decode le base64 en buffer
+        const imgBuffer = Buffer.from(base64_image, 'base64');
+        // Ecrit dans le FS Bucket
+        fs.writeFile(
+            path.join(BUCKET_DIR, filename),
+            imgBuffer,
+            (err) => {
+                if (err) {
+                    console.error('Erreur lors de la sauvegarde de l\'image dans le FS Bucket:', err);
+                } else {
+                    console.log(`Image sauvegardée dans le FS Bucket : ${filename}`);
                 }
-            );
+            }
+        );
 
         res.json(clientResult);
         console.log('Response sent to client');
