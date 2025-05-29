@@ -2,6 +2,9 @@ import dotenv from 'dotenv';
 import express, { json } from 'express';
 import cors from 'cors';
 import { Mistral } from "@mistralai/mistralai";
+import fs from 'fs';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 dotenv.config();
 
@@ -10,6 +13,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const APP_API_KEY = process.env.APP_API_KEY;
 const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
+const BUCKET_PATH = process.env.CC_FS_BUCKET
 
 const client = new Mistral({
     apiKey: MISTRAL_API_KEY
@@ -66,7 +70,26 @@ app.post('/api/ticket-mistral-ocr', async (req, res) => {
             console.log('Mistral API returned cannot_read error');
             return res.status(400).json({ error: 'Le scan est flou, illisible ou n\'a pas été identifié comme un ticket de caisse. Veuillez essayer avec un autre scan.' });
         }
-        res.json(JSON.parse(mistralResponse.choices[0].message.content));
+
+        // *** SAUVEGARDE DE L'IMAGE ***
+        // Génère un nom de fichier unique
+        const filename = `${uuidv4()}_${Date.now()}.jpg`;
+        // Decode le base64 en buffer
+        const imgBuffer = Buffer.from(base64_image, 'base64');
+        // Ecrit dans le FS Bucket
+        fs.writeFile(
+            path.join(BUCKET_PATH, filename),
+            imgBuffer,
+            (err) => {
+                if (err) {
+                    console.error('Erreur lors de la sauvegarde de l\'image dans le FS Bucket:', err);
+                } else {
+                    console.log(`Image sauvegardée dans le FS Bucket : ${filename}`);
+                }
+            }
+        );
+
+        res.json(clientResult);
         console.log('Response sent to client');
     } catch (err) {
         console.error('Error processing request:', err);
