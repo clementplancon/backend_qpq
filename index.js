@@ -13,6 +13,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const APP_API_KEY = process.env.APP_API_KEY;
 const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
+const BUCKET_PATH = '/home/clevercloud/qpq_ticket_storage/'; 
 
 const client = new Mistral({
     apiKey: MISTRAL_API_KEY
@@ -77,7 +78,7 @@ app.post('/api/ticket-mistral-ocr', async (req, res) => {
             const imgBuffer = Buffer.from(base64_image, 'base64');
             // Ecrit dans le FS Bucket
             fs.writeFile(
-                path.join("/dataset/bills", filename),
+                path.join(BUCKET_PATH, filename),
                 imgBuffer,
                 (err) => {
                     if (err) {
