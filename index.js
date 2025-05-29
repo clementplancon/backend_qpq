@@ -13,7 +13,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const APP_API_KEY = process.env.APP_API_KEY;
 const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
-const BUCKET_PATH = process.env.CC_FS_BUCKET
 
 const client = new Mistral({
     apiKey: MISTRAL_API_KEY
@@ -71,7 +70,6 @@ app.post('/api/ticket-mistral-ocr', async (req, res) => {
             return res.status(400).json({ error: 'Le scan est flou, illisible ou n\'a pas été identifié comme un ticket de caisse. Veuillez essayer avec un autre scan.' });
         }
 
-        if (BUCKET_PATH) {
             // *** SAUVEGARDE DE L'IMAGE ***
             // Génère un nom de fichier unique
             const filename = `${uuidv4()}_${Date.now()}.jpg`;
@@ -79,7 +77,7 @@ app.post('/api/ticket-mistral-ocr', async (req, res) => {
             const imgBuffer = Buffer.from(base64_image, 'base64');
             // Ecrit dans le FS Bucket
             fs.writeFile(
-                path.join(BUCKET_PATH, filename),
+                path.join("/dataset/bills", filename),
                 imgBuffer,
                 (err) => {
                     if (err) {
@@ -89,7 +87,6 @@ app.post('/api/ticket-mistral-ocr', async (req, res) => {
                     }
                 }
             );
-        }
 
         res.json(clientResult);
         console.log('Response sent to client');
