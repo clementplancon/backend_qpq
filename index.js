@@ -91,15 +91,14 @@ app.post('/api/ticket-mistral-ocr', async (req, res) => {
                     console.error('Erreur lors de la sauvegarde de l\'image dans le FS Bucket:', err);
                 } else {
                     console.log(`Image sauvegardée dans le FS Bucket : ${path.join(FULL_UPLOAD_PATH, filename)}`);
+                    // vérifier si le fichier a été sauvegardé
+                    if (!fs.existsSync(path.join(FULL_UPLOAD_PATH, filename))) {
+                        console.error('Le fichier n\'a pas été sauvegardé correctement dans le FS Bucket');
+                        return res.status(500).json({ error: 'Erreur lors de la sauvegarde de l\'image. Veuillez réessayer.' });
+                    }
                 }
             }
         );
-
-        // vérifier si le fichier a été sauvegardé
-        if (!fs.existsSync(path.join(FULL_UPLOAD_PATH, filename))) {
-            console.error('Le fichier n\'a pas été sauvegardé correctement dans le FS Bucket');
-            return res.status(500).json({ error: 'Erreur lors de la sauvegarde de l\'image. Veuillez réessayer.' });
-        }
 
         res.json(clientResult);
         console.log('Response sent to client');
