@@ -13,7 +13,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const APP_API_KEY = process.env.APP_API_KEY;
 const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
-const BUCKET_DIR = '/dataset/bills';
+const BUCKET_DIR = process.env.CC_FS_BUCKET || '/dataset/bills';
 const APP_HOME = process.env.APP_HOME || '/home/clevercloud/app';
 const FULL_UPLOAD_PATH = path.join(APP_HOME, BUCKET_DIR);
 
