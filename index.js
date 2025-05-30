@@ -13,8 +13,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const APP_API_KEY = process.env.APP_API_KEY;
 const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
+const BUCKET_DIR = process.env.CC_FS_BUCKET || '/tmp/bucket';
 const APP_HOME = process.env.APP_HOME || '/home/clevercloud/app';
-const BUCKET_DIR = path.join(APP_HOME, '/dataset/bills');
+const FULL_UPLOAD_PATH = path.join(APP_HOME, BUCKET_DIR);
 
 const client = new Mistral({
     apiKey: MISTRAL_API_KEY
@@ -73,8 +74,8 @@ app.post('/api/ticket-mistral-ocr', async (req, res) => {
         }
 
         // *** SAUVEGARDE DE L'IMAGE ***
-        if (!fs.existsSync(BUCKET_DIR)) {
-            fs.mkdirSync(BUCKET_DIR, { recursive: true });
+        if (!fs.existsSync(FULL_UPLOAD_PATH)) {
+            fs.mkdirSync(FULL_UPLOAD_PATH, { recursive: true });
         }
         
         // Génère un nom de fichier unique
@@ -83,7 +84,7 @@ app.post('/api/ticket-mistral-ocr', async (req, res) => {
         const imgBuffer = Buffer.from(base64_image, 'base64');
         // Ecrit dans le FS Bucket
         fs.writeFile(
-            path.join(BUCKET_DIR, filename),
+            path.join(FULL_UPLOAD_PATH, filename),
             imgBuffer,
             (err) => {
                 if (err) {
