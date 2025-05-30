@@ -81,7 +81,7 @@ app.post('/api/ticket-mistral-ocr', async (req, res) => {
         // Génère un nom de fichier unique
         const filename = `${uuidv4()}_${Date.now()}.jpg`;
         // Decode le base64 en buffer
-        const imgBuffer = Buffer.from(base64_image, 'base64');
+        const imgBuffer = Buffer.from("data:image/jpeg;base64," + base64_image, 'base64');
         // Ecrit dans le FS Bucket
         fs.writeFile(
             path.join(FULL_UPLOAD_PATH, filename),
