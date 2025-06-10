@@ -70,10 +70,7 @@ app.post('/api/ticket-mistral-ocr', async (req, res) => {
                         },
                     ],
                 }
-            ],
-            response_format: {
-                type: "json_object"
-            },
+            ]
         };
 
         const mistralResponse = await client.chat.complete(mistralBody);
