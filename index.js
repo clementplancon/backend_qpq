@@ -46,7 +46,7 @@ app.post('/api/ticket-mistral-ocr', async (req, res) => {
         console.log('base64_image received, preparing to send to Mistral API');
 
         const mistralBody = {
-            model: "mistral-medium-latest",
+            model: "mistral-small-latest",
             messages: [
                 {
                     role: "system",
