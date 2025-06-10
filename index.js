@@ -72,15 +72,7 @@ app.post('/api/ticket-mistral-ocr', async (req, res) => {
                 }
             ],
             response_format: {
-                type: "json_object",
-                json_object: {
-                    articles: [
-                        {
-                            nomArticle: "string",
-                            prixUnitaire: "number"
-                        }
-                    ]
-                }
+                type: "json_object"
             },
         };
 
