@@ -46,14 +46,23 @@ app.post('/api/ticket-mistral-ocr', async (req, res) => {
         console.log('base64_image received, preparing to send to Mistral API');
 
         const mistralBody = {
-            model: "mistral-small-latest",
+            model: "mistral-medium-latest",
             messages: [
+                {
+                    role: "system",
+                    content: [
+                        {
+                            type: "text",
+                            text: "Extraies la listes des articles et leur prix unitaire depuis des scan de ticket de caisse. Si tu vois deux fois le même article sur une même ligne avec un prix total et non un prix unitaire, je veux que tu les sépares en deux lignes. Je veux que tu me renvoies un JSON avec une liste d'objets contenant le nom de l'article et son prix unitaire. Le format du JSON : {'articles': [{'nomArticle': nom_article, 'prixUnitaire': prix_unitaire}]}. Si l'image est floue, illisible ou que ce n'est pas un ticket de caisse, je veux que tu me renvoies l'objet JSON suivant : { 'error': 'cannot_read' }. La réponse doit être un objet JSON et rien d'autre. Sans texte réalable, sans formatage, sans retour à la ligne, sans retour chariot de type '\\n' juste le JSON brut sans rien d'autre.",
+                        },
+                    ],
+                },
                 {
                     role: "user",
                     content: [
                         {
                             type: "text",
-                            text: "Voici un scan d'un ticket de caisse. Je veux que tu extraies la listes des articles et leur prix unitaire. Si tu vois deux fois le même article sur une même ligne avec un prix total et non un prix unitaire, je veux que tu les sépares en deux lignes. Je veux que tu me renvoies un JSON avec une liste d'objets contenant le nom de l'article et son prix unitaire. Le format du JSON : {'articles': [{'nomArticle': nom_article, 'prixUnitaire': prix_unitaire}, ...]}. Si l'image est floue, illisible ou que ce n'est pas un ticket de caisse, je veux que tu me renvoies l'objet JSON suivant : { 'error': 'cannot_read' }. La réponse doit être un objet JSON et rien d'autre. Sans texte réalable, sans formatage, sans retour à la ligne, sans retour chariot de type '\\n' juste le JSON brut sans rien d'autre.",
+                            text: "Extraies les information de ce scan de ticket de caisses et veille bien à respecter le format JSON demandé. Si l'image est floue, illisible ou que ce n'est pas un ticket de caisse, renvoie l'objet JSON suivant : { 'error': 'cannot_read' }.",
                         },
                         {
                             type: "image_url",
@@ -62,6 +71,7 @@ app.post('/api/ticket-mistral-ocr', async (req, res) => {
                     ],
                 },
             ],
+            responseFormat: {type: 'json_object'},
         };
 
         const mistralResponse = await client.chat.complete(mistralBody);
